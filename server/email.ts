@@ -53,18 +53,17 @@ async function initializeTransporter() {
 transporterInitialized = true;
 console.log("[Email] SMTP inicializado");
   } else {
-    console.log("[Email] Usando Ethereal (modo teste)");
-    // Usar transporte de teste (Ethereal) para desenvolvimento
-    const testAccount = await nodemailer.createTestAccount();
+   console.log("[Email] Usando configuração SMTP customizada");
+
     transporter = nodemailer.createTransport({
-      host: "smtp.ethereal.email",
-      port: 587,
-      secure: false,
-      auth: {
-        user: testAccount.user,
-        pass: testAccount.pass,
-      },
-    });
+    host: process.env.SMTP_HOST,
+    port: Number(process.env.SMTP_PORT),
+    secure: process.env.SMTP_SECURE === "true",
+    auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  },
+});
     transporterInitialized = true;
   }
 
