@@ -38,15 +38,35 @@ export const appRouter = router({
       return { success: true };
     }),
     updateEmail: publicProcedure
-      .input(z.object({ email: z.string().email() }))
-      .mutation(async ({ input, ctx }) => {
-        if (!ctx.user) {
-          throw new Error("Usuário não autenticado");
-        }
-        // Atualizar e-mail do usuário no banco de dados
-        await db.update(users).set({ email: input.email }).where(eq(users.id, ctx.user.id));
-        return { success: true, email: input.email };
-      }),
+        .input(z.object({ email: z.string().email() }))
+        .mutation(async ({ input, ctx }) => {
+
+         console.log("EMAIL RECEBIDO:", input.email);
+         console.log("USUÁRIO:", ctx.user);
+
+    if (!ctx.user) {
+      throw new Error("Usuário não autenticado");
+    }
+
+    const existingUser = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, ctx.user.id));
+
+    console.log("USUÁRIO NO BANCO:", existingUser);
+
+    await db
+      .update(users)
+      .set({ email: input.email })
+      .where(eq(users.id, ctx.user.id));
+
+    console.log("EMAIL SALVO!");
+
+    return {
+      success: true,
+      email: input.email,
+    };
+  }),
     getMe: publicProcedure.query(async ({ ctx }) => {
       console.log("=== GETME EXECUTOU ===");
       console.log("ctx.user:", ctx.user);
