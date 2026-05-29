@@ -7,9 +7,32 @@ import { sendFaultReportEmail } from "./email";
 
 export const appRouter = router({
   auth: router({
-    me: publicProcedure.query(async ({ ctx }) => {
-      return ctx.user || null;
-    }),
+  me: publicProcedure.query(async ({ ctx }) => {
+  if (!ctx.user) return null;
+
+  const existingUser = await db
+    .select()
+    .from(users)
+    .where(eq(users.id, ctx.user.id));
+
+  if (existingUser.length === 0) {
+    await db.insert(users).values({
+      id: ctx.user.id,
+      name: ctx.user.name || "Usuário",
+      email: ctx.user.email || "",
+      role: "user",
+    });
+
+    return {
+      id: ctx.user.id,
+      name: ctx.user.name || "Usuário",
+      email: ctx.user.email || "",
+      role: "user",
+    };
+  }
+
+  return existingUser[0];
+}),
     logout: publicProcedure.mutation(({ ctx }) => {
       // Logout logic would be handled by the session/cookie mechanism
       return { success: true };
