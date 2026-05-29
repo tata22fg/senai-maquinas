@@ -48,10 +48,31 @@ export const appRouter = router({
         return { success: true, email: input.email };
       }),
     getMe: publicProcedure.query(async ({ ctx }) => {
-      if (!ctx.user) return null;
-      const user = await db.select().from(users).where(eq(users.id, ctx.user.id));
-      return user[0] || null;
-    }),
+  if (!ctx.user) return null;
+
+  const existingUser = await db
+    .select()
+    .from(users)
+    .where(eq(users.id, ctx.user.id));
+
+  if (existingUser.length === 0) {
+    await db.insert(users).values({
+      id: ctx.user.id,
+      name: ctx.user.name || "Usuário",
+      email: ctx.user.email || "",
+      role: "user",
+    });
+
+    return {
+      id: ctx.user.id,
+      name: ctx.user.name || "Usuário",
+      email: ctx.user.email || "",
+      role: "user",
+    };
+  }
+
+  return existingUser[0];
+}),
   }),
   machines: router({
     list: publicProcedure.query(async () => {
