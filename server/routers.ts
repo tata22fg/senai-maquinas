@@ -48,6 +48,8 @@ export const appRouter = router({
         return { success: true, email: input.email };
       }),
     getMe: publicProcedure.query(async ({ ctx }) => {
+      console.log("=== GETME EXECUTOU ===");
+      console.log("ctx.user:", ctx.user);
   if (!ctx.user) return null;
 
   const existingUser = await db
@@ -56,6 +58,7 @@ export const appRouter = router({
     .where(eq(users.id, ctx.user.id));
 
   if (existingUser.length === 0) {
+    console.log("CRIANDO USUÁRIO NO BANCO");
     await db.insert(users).values({
       id: ctx.user.id,
       name: ctx.user.name || "Usuário",
